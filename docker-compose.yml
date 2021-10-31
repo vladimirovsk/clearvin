@@ -1,0 +1,52 @@
+version: '3.7'
+services:
+  db:
+    container_name: sample-mysql
+    image: mysql
+    restart: always
+    command:  --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_USER_HOST: '%'
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_USER: 'root'
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    networks:
+      - backend
+    volumes:
+      - /var/lib/mysql
+  redis:
+    container_name: clearvin-redis
+    image: redis:latest
+    ports:
+      - 6379:6379
+    expose:
+      - 6379
+    networks:
+      - backend
+  server:
+    build: ./
+    container_name: clearvin-serer
+    command: npm run dev
+    restart: always
+    ports:
+      - 80:8081
+    expose:
+      - 3306
+    networks:
+      - backend
+    depends_on:
+      - db
+      - redis
+
+
+networks:
+  backend:
+    name: network
+    driver: bridge
